@@ -78,6 +78,12 @@ app_license = "MIT"
 #	}
 # }
 
+doc_events = {
+ 	"Game Event": {
+ 		"after_insert": "sports.api.update_standings_after_event"
+	}
+ }
+
 # Scheduled Tasks
 # ---------------
 
