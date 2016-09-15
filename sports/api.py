@@ -6,6 +6,9 @@ from operator import itemgetter
 from frappe.utils.background_jobs import enqueue
 
 
+def update_standings_after_event(doc, method):
+	enqueue(update_standings, game_event=doc.name)
+
 def get_stats(team, games):
 	stats = {
 		'goals_won': 0,
@@ -31,9 +34,8 @@ def get_stats(team, games):
 		stats['goals_lost'] += goals_lost
 	return stats
 			
-@frappe.whitelist()
-def update_standings(event):
-	event = frappe.get_doc("Game Event", event)
+def update_standings(game_event):
+	event = frappe.get_doc("Game Event", game_event)
 	game = frappe.get_doc("Game", event.game)
 	season = frappe.get_doc("Season", game.season)
 	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -81,9 +83,6 @@ def update_standings(event):
 	season.save()
 	frappe.db.commit()
 
-
-def update_standings_after_event(doc, method):
-	enqueue(update_standings,event="e03ce9b20e")
 
 @frappe.whitelist()
 def enrol_teams(season):
