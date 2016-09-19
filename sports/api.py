@@ -6,6 +6,35 @@ from operator import itemgetter
 from frappe.utils.background_jobs import enqueue
 
 
+@frappe.whitelist(allow_guest=True)
+def get_menu(season):
+	countries = frappe.get_list("Country Sport", fields=['country', 'sport'])
+	return countries
+
+@frappe.whitelist(allow_guest=True)
+def get_sports(country):
+	sports = frappe.get_list("Country Sport", filters={'country':country},fields=['country', 'sport'])
+	return sports
+
+@frappe.whitelist(allow_guest=True)
+def get_seasons(tournament):
+	seasons = frappe.get_list("Season", filters={'tournament':tournament},fields=['name'])
+	return seasons
+
+@frappe.whitelist(allow_guest=True)
+def get_season_fixtures(season):
+	fixtures = frappe.get_list("Game", filters={'season':season}, fields=['day', 'date','host_team','score', 'guest_team', 'venue'])
+	return fixtures
+
+@frappe.whitelist(allow_guest=True)
+def get_season_standings(season):
+	last_event = get_last_event(season)
+	standings = frappe.get_list("Team Standing", filters={'season':season, 'event': last_event}, fields=['name', 'team','games','wins', 'draws', 'losses', 'position','points','last_1','last_2','last_3','last_4','last_5'])
+	return standings
+
+def get_last_event(season):
+    return frappe.get_all("Game Event", filters={'season':season}, limit_page_length = 1)[0]["name"]
+
 def update_standings_after_event(doc, method):
 	enqueue(update_standings, game_event=doc.name)
 
@@ -34,6 +63,8 @@ def get_stats(team, games):
 		stats['goals_lost'] += goals_lost
 	return stats
 			
+
+@frappe.whitelist()
 def update_standings(game_event):
 	event = frappe.get_doc("Game Event", game_event)
 	game = frappe.get_doc("Game", event.game)
@@ -54,6 +85,7 @@ def update_standings(game_event):
 			"doctype":"Team Standing",
 			"team":team.team,
 			"games": len(team_games_as_host)+len(team_games_as_guest),
+			"season": game.season,
 			"host_goals_won": host_stats['goals_won'],
 			"host_goals_lost": host_stats['goals_lost'],
 			"host_wins":host_stats['wins'],
@@ -78,7 +110,8 @@ def update_standings(game_event):
 	standings = sorted(standings, key=itemgetter('points'), reverse=True)
 	for position, standing in enumerate(standings):
 		standing['position'] = position + 1
-		season.append("team_standings", standing)
+		new_standing = frappe.get_doc(standing)
+		new_standing.insert()
 	season.last_standings_update = now
 	season.save()
 	frappe.db.commit()

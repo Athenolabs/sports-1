@@ -1,0 +1,41 @@
+<div class="hero-and-content">
+	<div data-html-block="hero"></div>
+		<div class="container" data-html-block="content">
+			<div class="page-container" id="page-standings" data-path="signup"
+			    data-doctype="Web Page">
+				<div class="page-content">
+					<div class="page-content-wrapper">
+						 <table class="table table-condensed" id="standings-table">
+						    <thead>
+						      <tr>
+							<th></th>
+							<th></th>
+							<th>GP</th>
+							<th>W</th>
+							<th>L</th>
+							<th>W</th>
+							<th>P</th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+						      </tr>
+						    </thead>
+						    <tbody>
+						    </tbody>
+						  </table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+        {% include "sports/templates/includes/standings.js" %}
+        frappe.ready(function() {
+                standings($('#page-standings'));
+        });
+</script>

@@ -1,0 +1,36 @@
+
+<div class="hero-and-content">
+	<div data-html-block="hero"></div>
+		<div class="container" data-html-block="content">
+			<div class="page-container" id="page-fixtures" data-path="signup"
+			    data-doctype="Web Page">
+				<div class="page-content">
+					<div class="page-content-wrapper">
+						 <table class="table table-condensed" id="fixtures-table">
+						    <thead>
+						      <tr>
+							<th>Day</th>
+							<th>Date</th>
+							<th>Host</th>
+							<th>Score</th>
+							<th>Guest</th>
+							<th>Venue</th>
+						      </tr>
+						    </thead>
+						    <tbody>
+						    </tbody>
+						  </table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+        {% include "sports/templates/includes/fixtures.js" %}
+        frappe.ready(function() {
+                fixtures($('#page-fixtures'));
+        });
+</script>

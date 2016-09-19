@@ -5,6 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.website.website_generator import WebsiteGenerator
 
-class Tournament(Document):
-	pass
+class Tournament(WebsiteGenerator):
+	website = frappe._dict(
+		template = "templates/generators/tournament.html"
+	)
+
+	def validate(self):
+		self.route = "tournament/"+self.name
