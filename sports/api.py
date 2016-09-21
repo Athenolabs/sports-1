@@ -28,12 +28,18 @@ def get_season_fixtures(season):
 
 @frappe.whitelist(allow_guest=True)
 def get_season_standings(season):
+	filters = {'season':season}
 	last_event = get_last_event(season)
-	standings = frappe.get_list("Team Standing", filters={'season':season, 'event': last_event}, fields=['name', 'team','games','wins', 'draws', 'losses', 'position','points','last_1','last_2','last_3','last_4','last_5'])
+	if last_event:
+		filters['event'] = last_event
+	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position','points','last_1','last_2','last_3','last_4','last_5'])
 	return standings
 
 def get_last_event(season):
-    return frappe.get_all("Game Event", filters={'season':season}, limit_page_length = 1)[0]["name"]
+	try:
+    		return frappe.get_all("Game Event", filters={'season':season}, limit_page_length = 1)[0]["name"]
+	except:
+		return None
 
 def update_standings_after_event(doc, method):
 	enqueue(update_standings, game_event=doc.name)
