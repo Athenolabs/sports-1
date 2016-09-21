@@ -11,6 +11,10 @@ app_color = "green"
 app_email = "arwema@africlouds.com"
 app_license = "MIT"
 
+fixtures = [
+"Web Page"
+]
+
 # Includes in <head>
 # ------------------
 
@@ -40,7 +44,7 @@ app_license = "MIT"
 # ----------
 
 # automatically create page for each record of this doctype
-website_generators = ["Sport","Tournament"]
+#website_generators = ["Sport","Tournament"]
 
 # Installation
 # ------------
