@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:title", 
  "beta": 0, 
@@ -259,7 +259,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-09-20 09:53:46.027994", 
+ "modified": "2016-09-21 11:39:16.752079", 
  "modified_by": "Administrator", 
  "module": "Sports", 
  "name": "Season", 

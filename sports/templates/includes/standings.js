@@ -1,7 +1,7 @@
 standings = function(page) {
 
 		var season = get_url_arg('season');
-
+		$('#title').text(season)
 		frappe.call({
                         method:"sports.api.get_season_standings",
                         args: {
