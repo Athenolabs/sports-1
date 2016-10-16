@@ -22,8 +22,18 @@ def get_seasons(tournament):
 	return seasons
 
 @frappe.whitelist(allow_guest=True)
-def get_season_fixtures(season):
-	fixtures = frappe.get_list("Game", filters={'season':season}, fields=['day', 'date','host_team','score', 'guest_team', 'venue'])
+def get_current_season(tournament):
+	seasons = frappe.get_list("Season", filters={'tournament':tournament},fields=['name'])
+	return seasons[0]
+
+@frappe.whitelist(allow_guest=True)
+def get_seasons_archives(tournament):
+	seasons = frappe.get_list("Season", filters={'tournament':tournament},fields=['name'])
+	return seasons[1:]
+
+@frappe.whitelist(allow_guest=True)
+def get_season_fixtures(season, day=1):
+	fixtures = frappe.get_list("Game", filters={'season':season, 'day':day}, fields=['day', 'date','host_team','score', 'guest_team', 'venue', 'name'], order_by="day, date")
 	return fixtures
 
 @frappe.whitelist(allow_guest=True)
@@ -32,7 +42,7 @@ def get_season_standings(season):
 	last_event = get_last_event(season)
 	if last_event:
 		filters['event'] = last_event
-	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position','points','last_1','last_2','last_3','last_4','last_5'])
+	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_diff','points'])
 	return standings
 
 def get_last_event(season):
@@ -42,7 +52,7 @@ def get_last_event(season):
 		return None
 
 def update_standings_after_event(doc, method):
-	enqueue(update_standings, game_event=doc.name)
+	update_standings(doc.name)
 
 def get_stats(team, games):
 	stats = {
@@ -79,8 +89,8 @@ def update_standings(game_event):
 
 	standings = []
 	for team in season.teams:
-		team_games_as_host = frappe.db.sql("SELECT * FROM tabGame WHERE season='%s' AND host_team='%s' AND status='Played' " % (season.title,team.team), as_dict=1)
-		team_games_as_guest = frappe.db.sql("SELECT * FROM tabGame WHERE season='%s' AND guest_team='%s' AND status='Played'" % (season.title,team.team), as_dict=1)
+		team_games_as_host = frappe.db.sql("SELECT * FROM tabGame WHERE season='%s' AND host_team='%s' AND (status='Playing'  OR status='Played')" % (season.title,team.team), as_dict=1)
+		team_games_as_guest = frappe.db.sql("SELECT * FROM tabGame WHERE season='%s' AND guest_team='%s' AND (status='Playing' OR status='Played')" % (season.title,team.team), as_dict=1)
 
 			
 		host_stats = get_stats(team, team_games_as_host)
@@ -89,7 +99,7 @@ def update_standings(game_event):
 
 		standing = {
 			"doctype":"Team Standing",
-			"team":team.team,
+			"team":team.team.upper(),
 			"games": len(team_games_as_host)+len(team_games_as_guest),
 			"season": game.season,
 			"host_goals_won": host_stats['goals_won'],
@@ -113,7 +123,8 @@ def update_standings(game_event):
 		standing['points'] = standing['wins'] * 3 + standing['draws']
 		standing['goals_diff'] = standing['goals_won'] - standing['goals_lost']
 		standings.append(standing)
-	standings = sorted(standings, key=itemgetter('points'), reverse=True)
+	#standings = sorted(standings, key=itemgetter('points'), reverse=True)
+	standings = multikeysort(standings, ['-points','games','-goals_diff','goals_lost','team'])
 	for position, standing in enumerate(standings):
 		standing['position'] = position + 1
 		new_standing = frappe.get_doc(standing)
@@ -122,6 +133,18 @@ def update_standings(game_event):
 	season.save()
 	frappe.db.commit()
 
+def multikeysort(items, columns):
+    from operator import itemgetter
+    comparers = [((itemgetter(col[1:].strip()), -1) if col.startswith('-') else
+                  (itemgetter(col.strip()), 1)) for col in columns]
+    def comparer(left, right):
+        for fn, mult in comparers:
+            result = cmp(fn(left), fn(right))
+            if result:
+                return mult * result
+        else:
+            return 0
+    return sorted(items, cmp=comparer)
 
 @frappe.whitelist()
 def enrol_teams(season):

@@ -1,14 +1,26 @@
 menu = function(page) {
+		frappe.call({
+                        method:"sports.api.get_current_season",
+                        args: {
+                                tournament: "Rwanda National Football League"
+                        },
+                        callback: function(data){
+                                season = data.message;
+                        	$("#current-season").text(season['name']);
+				$("#current-season").attr("href", '/season?season='+season['name'])
+
+                        }
+                });
 
 		frappe.call({
-                        method:"sports.api.get_seasons",
+                        method:"sports.api.get_seasons_archives",
                         args: {
                                 tournament: "Rwanda National Football League"
                         },
                         callback: function(data){
                                 seasons = data.message;
                                 seasons.forEach(function(season) {
-                                        $("#seasons-menu").append('<li><a href="standings?season='+season['name']+'">'+season['name']+'</a></li>');
+                                        $("#seasons-menu").append('<li><a href="/season?season='+season['name']+'">'+season['name']+'</a></li>');
 
                                 });
                         }

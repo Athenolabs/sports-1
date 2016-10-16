@@ -1,0 +1,50 @@
+<div class="container">
+	<div class="row" style="font-size:10px">
+
+		<div class="col-xs-12 col-md-6">
+			<table class="table table-condensed" id="fixtures-table">
+				<thead>
+					<tr>
+						<th>Date</th>
+						<th>Host</th>
+						<th>Score</th>
+						<th>Guest</th>
+						<th>Venue</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+			<span>Day</span>
+			<div>
+			<ul class="pagination" id="days">
+			</ul>
+			</div>
+		</div>
+
+		<div class="col-xs-12 col-md-6">
+						 <table class="table table-condensed" id="standings-table">
+						    <thead>
+						      <tr>
+							<th></th>
+							<th></th>
+							<th>GP</th>
+							<th>W</th>
+							<th>L</th>
+							<th>W</th>
+							<th>Diff</th>
+							<th>P</th>
+						      </tr>
+						    </thead>
+						    <tbody>
+						    </tbody>
+						  </table>
+		</div>
+	</div>
+</div>
+<script>
+        {% include "sports/templates/includes/season.js" %}
+        frappe.ready(function() {
+                standings($('#page-standings'));
+        });
+</script>

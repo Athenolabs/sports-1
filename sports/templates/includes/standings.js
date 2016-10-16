@@ -10,7 +10,21 @@ standings = function(page) {
                         callback: function(data){
 				standings = data.message;
 				standings.forEach(function(standing) {
-					$('#standings-table tbody').append('<tr class="child"><td>'+standing['position']+'</td><td>'+standing['team']+'</td><td>'+standing['games']+'</td><td>'+standing['wins']+'</td><td>'+standing['losses']+'</td><td>'+standing['draws']+'</td><td>'+standing['points']+'</td><td>'+standing['last_1']+'</td><td>'+standing['last_2']+'</td><td>'+standing['last_3']+'</td><td>'+standing['last_4']+'</td><td>'+standing['last_5']+'</td></tr>');
+					$('#standings-table tbody').append(`
+						<tr class="child">
+							<td>${standing['position']}</td>
+							<td><a href='/team/${standing['team']}'>${standing['team']}</a></td>
+							<td>${standing['games']}</td>
+							<td>${standing['wins']}</td>
+							<td>${standing['losses']}</td>
+							<td>${standing['draws']}</td>
+							<td>${standing['points']}</td>
+							<td>${standing['last_1']}</td>
+							<td>${standing['last_2']}</td>
+							<td>${standing['last_3']}</td>
+							<td>${standing['last_4']}</td>
+							<td>${standing['last_5']}</td>
+						</tr>`);
 				});
                         }
                 });
