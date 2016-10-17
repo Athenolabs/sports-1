@@ -45,6 +45,15 @@ def get_season_standings(season):
 	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_diff','points'])
 	return standings
 
+@frappe.whitelist(allow_guest=True)
+def get_player_standings(season):
+	filters = {'season':season}
+	last_event = get_last_event(season)
+	if last_event:
+		filters['event'] = last_event
+	standings = frappe.get_list("Player Standing", filters=filters, fields=['player', 'team','goals', 'season'], order_by="goals desc")
+	return standings
+
 def get_last_event(season):
 	try:
     		return frappe.get_all("Game Event", filters={'season':season}, limit_page_length = 1)[0]["name"]
@@ -52,6 +61,9 @@ def get_last_event(season):
 		return None
 
 def update_standings_after_event(doc, method):
+	event = frappe.get_doc("Game Event", doc.name)
+	start_stop_game(event)
+	update_game_score(doc.name)
 	update_standings(doc.name)
 
 def get_stats(team, games):
@@ -79,6 +91,37 @@ def get_stats(team, games):
 		stats['goals_lost'] += goals_lost
 	return stats
 			
+@frappe.whitelist()
+def update_game_score(game_event):
+	event = frappe.get_doc("Game Event", game_event)
+	game = frappe.get_doc("Game", event.game)
+	game.update_score()
+
+def start_stop_game(event):
+	game = frappe.get_doc("Game", event.game)
+	if event.type == "Kick Off":
+		game.kick_off()
+	elif event.type == "End":
+		game.end()
+
+	
+@frappe.whitelist()
+def update_player_standings(game_event):
+	event = frappe.get_doc("Game Event", game_event)
+	game = frappe.get_doc("Game", event.game)
+	season = frappe.get_doc("Season", game.season)
+	now = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+	events = frappe.db.sql("SELECT COUNT(name) score, team,player FROM `tabGame Event` WHERE type='Goal' GROUP BY player ORDER BY score DESC, player;", as_dict=1)
+	for event in events:
+		new_standing = frappe.get_doc({
+			"doctype":"Player Standing",
+			"player":event["player"],
+			"team":event["team"],
+			"season":game.season,
+			"goals":event["score"],
+			"event":game_event
+		})
+		new_standing.insert()
 
 @frappe.whitelist()
 def update_standings(game_event):

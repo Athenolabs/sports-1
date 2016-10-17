@@ -25,6 +25,24 @@ standings = function(page) {
                         }
                 });
 
+                frappe.call({
+                        method:"sports.api.get_player_standings",
+                        args: {
+                                season: season
+                        },
+                        callback: function(data){
+                                standings = data.message;
+                                standings.forEach(function(standing) {
+                                        $('#scorers-table tbody').append(`
+                                                <tr class="child">
+                                                        <td><a href='/player?player=${standing['player']}'>${standing['player']}</a></td>
+                                                        <td><a href='/team?team=${standing['team']}'>${standing['team']}</a></td>
+                                                        <td>${standing['goals']}</td>
+                                                </tr>`);
+                                });
+                        }
+                });
+
 
 		frappe.call({
                         method:"sports.api.get_season_fixtures",
