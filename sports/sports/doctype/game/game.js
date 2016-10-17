@@ -13,5 +13,42 @@ frappe.ui.form.on('Game', {
                         }
                 });
         },
+	load_host_lineups: function(frm) {
+                frappe.call({
+                        method: "sports.api.load_lineups",
+                        args: {
+                                game: frm.doc.name,
+				team: "host"
+                        }
+                });
+        },
+	load_guest_lineups: function(frm) {
+                frappe.call({
+                        method: "sports.api.load_lineups",
+                        args: {
+                                game: frm.doc.name,
+				team: "guest"
+                        }
+                });
+        },
+
+	reset_host_lineups: function(frm) {
+                frappe.call({
+                        method: "sports.api.reset_lineups",
+                        args: {
+                                game: frm.doc.name,
+				team: "host"
+                        }
+                });
+        },
+	reset_guest_lineups: function(frm) {
+                frappe.call({
+                        method: "sports.api.reset_lineups",
+                        args: {
+                                game: frm.doc.name,
+				team: "guest"
+                        }
+                });
+        }
 
 });

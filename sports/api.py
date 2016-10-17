@@ -60,6 +60,7 @@ def get_last_event(season):
 	except:
 		return None
 
+
 def update_standings_after_event(doc, method):
 	event = frappe.get_doc("Game Event", doc.name)
 	start_stop_game(event)
@@ -202,3 +203,38 @@ def enrol_teams(season):
 		}
 		season.append("teams",season_team)
 	season.save()
+
+
+@frappe.whitelist()
+def load_lineups(game, team):
+	game = frappe.get_doc("Game", game)
+	if not game.host_lineups:
+		if team == "host":
+			players = frappe.get_all("Player", filters={'team':game.host_team})
+			for player in players:
+				lineup = {
+					"doctype": "Game Lineup",
+					"team":game.host_team,
+					"player":player.name
+				}
+				game.append("host_lineups",lineup)
+		elif team == "guest":
+			players = frappe.get_all("Player", filters={'team':game.guest_team})
+			for player in players:
+				lineup = {
+					"doctype": "Game Lineup",
+					"team":game.guest_team,
+					"player":player.name
+				}
+				game.append("guest_lineups",lineup)
+
+		game.save()
+
+@frappe.whitelist()
+def reset_lineups(game, team):
+	game = frappe.get_doc("Game", game)
+	if team == "host":
+		game.host_lineups = None
+	elif team == "guest":
+		game.guest_lineups = None
+	game.save()
