@@ -9,7 +9,7 @@ frappe.ui.form.on('Game', {
                 frappe.call({
                         method: "sports.doctype.game.update_score",
                         args: {
-                                Game: frm.doc.name
+                                game_event: frm.doc.name
                         }
                 });
         },

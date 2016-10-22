@@ -8,9 +8,7 @@ from frappe.model.document import Document
 
 class Game(Document):
 	def validate(self):
-		self.description = "%s VS %s D-%i %s" % (self.host_team, self.guest_team, self.day, self.season)
-		if self.status in ["Playing","Played"]:
-			self.score = "%i - %i" % (self.host_team_score, self.guest_team_score)
+		self.description = "%s VS %s D-%i %s" % (self.host_team, self.guest_team, self.day if self.day else 0, self.season)
 
 	@frappe.whitelist() 
 	def update_score(self):
@@ -19,6 +17,7 @@ class Game(Document):
 			goals_guest = frappe.db.count("Game Event", filters={"game": self.name, "team":self.guest_team, 'type':'Goal'})
 			self.host_team_score = goals_host if goals_host else 0
 			self.guest_team_score = goals_guest if goals_guest else 0
+			self.score = "%i - %i" % (self.host_team_score, self.guest_team_score)
 
 			self.save()
 			frappe.db.commit()

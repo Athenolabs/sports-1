@@ -36,6 +36,7 @@ def get_season_fixtures(season, day=1):
 	fixtures = frappe.get_list("Game", filters={'season':season, 'day':day}, fields=['day', 'date','host_team','score', 'guest_team', 'venue', 'name'], order_by="day, date")
 	return fixtures
 
+
 @frappe.whitelist(allow_guest=True)
 def get_season_standings(season):
 	filters = {'season':season}
@@ -64,8 +65,8 @@ def get_last_event(season):
 def update_standings_after_event(doc, method):
 	event = frappe.get_doc("Game Event", doc.name)
 	start_stop_game(event)
-	update_game_score(doc.name)
-	update_standings(doc.name)
+	enqueue(update_game_score, game_event=doc.name)
+	enqueue(update_standings, game_event=doc.name)
 
 def get_stats(team, games):
 	stats = {
