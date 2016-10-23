@@ -43,7 +43,7 @@ def get_season_standings(season):
 	last_event = get_last_event(season)
 	if last_event:
 		filters['event'] = last_event
-	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_diff','points'])
+	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_won', 'goals_lost','goals_diff','points'], order_by="points desc, goals_diff desc, goals_lost asc, team asc")
 	return standings
 
 @frappe.whitelist(allow_guest=True)
@@ -169,7 +169,7 @@ def update_standings(game_event):
 		standing['goals_diff'] = standing['goals_won'] - standing['goals_lost']
 		standings.append(standing)
 	#standings = sorted(standings, key=itemgetter('points'), reverse=True)
-	standings = multikeysort(standings, ['-points','games','-goals_diff','goals_lost','team'])
+	standings = multikeysort(standings, ['-points','-goals_diff','goals_lost', 'team'])
 	for position, standing in enumerate(standings):
 		standing['position'] = position + 1
 		new_standing = frappe.get_doc(standing)

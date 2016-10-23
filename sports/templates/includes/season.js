@@ -18,6 +18,8 @@ standings = function(page) {
 							<td>${standing['wins']}</td>
 							<td>${standing['losses']}</td>
 							<td>${standing['draws']}</td>
+							<td>${standing['goals_won']}</td>
+							<td>${standing['goals_lost']}</td>
 							<td>${standing['goals_diff']}</td>
 							<td>${standing['points']}</td>
 						</tr>`);
