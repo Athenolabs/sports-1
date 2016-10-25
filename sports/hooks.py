@@ -84,7 +84,8 @@ fixtures = [
 
 doc_events = {
  	"Game Event": {
- 		"after_insert": "sports.api.update_standings_after_event"
+ 		"after_insert": "sports.api.update_standings_after_event",
+		"after_insert": "sports.api.send_notifications"
 	}
  }
 

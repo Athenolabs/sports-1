@@ -4,6 +4,9 @@ from frappe.utils import nowdate, add_days
 from time import gmtime, strftime
 from operator import itemgetter
 from frappe.utils.background_jobs import enqueue
+import facebook
+import tweepy
+
 
 
 @frappe.whitelist(allow_guest=True)
@@ -43,7 +46,7 @@ def get_season_standings(season):
 	last_event = get_last_event(season)
 	if last_event:
 		filters['event'] = last_event
-	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_won', 'goals_lost','goals_diff','points'], order_by="points desc, goals_diff desc, goals_lost asc, team asc")
+	standings = frappe.get_list("Team Standing", filters=filters, fields=['name', 'team','games','wins', 'draws', 'losses', 'position', 'goals_won', 'goals_lost','goals_diff','points'], order_by="points desc, goals_diff desc, goals_won desc, team asc")
 	return standings
 
 @frappe.whitelist(allow_guest=True)
@@ -67,6 +70,49 @@ def update_standings_after_event(doc, method):
 	start_stop_game(event)
 	enqueue(update_game_score, game_event=doc.name)
 	enqueue(update_standings, game_event=doc.name)
+
+def send_notifications(doc, method):
+	event = frappe.get_doc("Game Event", doc.name)
+	send_facebook(event)
+	send_tweeter(event)
+
+def send_facebook(event):
+	  cfg = {
+	    "page_id"      : "340556576293232",  # Step 1
+	    "access_token" : "EAADstR7dElkBAM3lmprKwP3VCDcqNRHdPmYJTJJlhdcl4X5W4R6bm2jv8rWdanMm9egodipHDWmpIniCiZCylaGKphYdjZBVoy3v1ZB42RLSRnqawLzftQ5xzoDKX9HtCuvT98oZC2V8DL8k9wZAKhgicxUPZAfeIZD"   # Step 3
+	    }
+
+	  api = get_facebook_api(cfg)
+	  msg = event.type
+	  status = api.put_wall_post(msg)
+
+def get_facebook_api(cfg):
+	  graph = facebook.GraphAPI(cfg['access_token'])
+	  resp = graph.get_object('me/accounts')
+	  page_access_token = None
+	  for page in resp['data']:
+	    if page['id'] == cfg['page_id']:
+	      page_access_token = page['access_token']
+	  graph = facebook.GraphAPI(page_access_token)
+	  return graph
+
+
+def send_tweeter(event):
+	  cfg = {
+	    "consumer_key"        : "E6DpIXVSLj9rptOPWnIPqUgGL",
+	    "consumer_secret"     : "iDS3XCM7MrUdpZRoqsPyHTpcbiF2Eiy0UVMC3suzeWk8LGiBbw",
+	    "access_token"        : "779820333268426752-ccD1tQGnHKvtDMyJeCM2C9r35Uvf3mt",
+	    "access_token_secret" : "8Ocu6BJahsXGfOKyjnNG3Tmk6S6l08onDS59IVRjgLhLD"
+	  }
+	  api = get_tweeter_api(cfg)
+	  tweet = event.type
+	  status = api.update_status(status=tweet) 
+	  # Yes, tweet is called 'status' rather confusing
+
+def get_tweeter_api(cfg):
+	  auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
+	  auth.set_access_token(cfg['access_token'], cfg['access_token_secret'])
+	  return tweepy.API(auth)
 
 def get_stats(team, games):
 	stats = {
@@ -169,7 +215,7 @@ def update_standings(game_event):
 		standing['goals_diff'] = standing['goals_won'] - standing['goals_lost']
 		standings.append(standing)
 	#standings = sorted(standings, key=itemgetter('points'), reverse=True)
-	standings = multikeysort(standings, ['-points','-goals_diff','goals_lost', 'team'])
+	standings = multikeysort(standings, ['-points','-goals_diff','-goals_won', 'team'])
 	for position, standing in enumerate(standings):
 		standing['position'] = position + 1
 		new_standing = frappe.get_doc(standing)

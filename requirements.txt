@@ -1,1 +1,3 @@
 frappe
+facebook-sdk
+tweepy
