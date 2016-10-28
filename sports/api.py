@@ -83,7 +83,7 @@ def send_facebook(event):
 	    }
 
 	  api = get_facebook_api(cfg)
-	  msg = event.type
+	  msg = str(event.serial_number)+" "+event.type
 	  status = api.put_wall_post(msg)
 
 def get_facebook_api(cfg):
