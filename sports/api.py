@@ -70,6 +70,7 @@ def update_standings_after_event(doc, method):
 	start_stop_game(event)
 	enqueue(update_game_score, game_event=doc.name)
 	enqueue(update_standings, game_event=doc.name)
+	enqueue(update_player_standings, game_event=doc.name)
 
 def send_notifications(doc, method):
 	event = frappe.get_doc("Game Event", doc.name)
